@@ -14,7 +14,6 @@
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile _POST_PROCESS_ON
 
             #include "UnityCG.cginc"
 
@@ -44,12 +43,7 @@
 
             fixed4 frag (v2f i) : SV_Target
             {
-#if _POST_PROCESS_ON
-                fixed4 col = tex2D(_PostRT, i.uv);
-#else
-                fixed4 col = tex2D(_MainTex, i.uv);
-#endif
-                return col;
+                return tex2D(_PostRT, i.uv);
             }
             ENDCG
         }
