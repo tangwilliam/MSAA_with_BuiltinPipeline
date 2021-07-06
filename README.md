@@ -1,5 +1,5 @@
 # MSAA_with_BuiltinPipeline
-Unity 移动端+内置渲染管线：使用多相机，MSAA Memoryless，及正确设置RenderTexture的StoreAction的方案
+Unity 移动端+内置渲染管线：使用 MSAA Memoryless，及正确设置RenderTexture的StoreAction的方案
 
 使用了优化方案的场景：
 
