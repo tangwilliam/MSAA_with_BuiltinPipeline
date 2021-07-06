@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace TA
+namespace Will
 {
 
     static public class ShaderUtils

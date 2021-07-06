@@ -5,13 +5,11 @@ using Rendering = UnityEngine.Rendering;
 using LoadAction = UnityEngine.Rendering.RenderBufferLoadAction;
 using StoreAction = UnityEngine.Rendering.RenderBufferStoreAction;
 
-namespace TA
+namespace Will
 {
     [DisallowMultipleComponent]
     public class CameraSetup : MonoBehaviour
     {
-        public Color ClearColor = new Color(0.0f, 0.0f, 0.0f, 0.0f);
-
         [Range(0.01f,1f)]
         public float RtScale = 1.0f;
 
@@ -37,25 +35,23 @@ namespace TA
         {
             if (cam == null) return;
 
-            cam.clearFlags = CameraClearFlags.Nothing; // ClearRenderTarget 放到 BeforeForwardOpaque
+            //cam.clearFlags = CameraClearFlags.Nothing; // 该语句可以删除。虽然Unity论坛中那篇帖子提到需要，但XCode中测试下来删除了也没区别。
 
             cam.RemoveCommandBuffers(Rendering.CameraEvent.BeforeForwardOpaque);
 
             Rendering.CommandBuffer cmd = new Rendering.CommandBuffer();
             cmd.SetRenderTarget(Rendering.BuiltinRenderTextureType.CameraTarget,
                 LoadAction.DontCare, StoreAction.Store, LoadAction.DontCare, StoreAction.DontCare
-            );
-            cmd.ClearRenderTarget(true, true, clearColor, 1.0f);
-            cmd.name = "LoadAction: Dont Care, StoreAction: Dont Care";
+            ); // 注意：最后一环的UI相机也不能设置ColorBuffer的StoreAction为DontCare，因为仍需要Store它到SystemMemory作为双缓冲的Backbuffer
+
+            // 也可以在编辑器里设置 ClearFlag = SolidColor，用XCode观察 Dependency View 和带宽与本句开销相同
+            // 如果需要使用Unity提供的Skybox机制，那么就必然不能加本句代码了。
+            // 用RenderDoc查看，使用ClearFlag = Skybox 时，没有此句代码，Unity仍会在Renderpass开始时调用glClear()
+            //cmd.ClearRenderTarget(true, true, Color.clear, 1.0f);
+
+            cmd.name = "Setup LoadAction and StoreAction";
             cam.AddCommandBuffer(Rendering.CameraEvent.BeforeForwardOpaque, cmd);
 
-        }
-
-        public static void ResetLoadStoreActionSetup(Camera cam)
-        {
-            if (cam == null) return;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.RemoveCommandBuffers(Rendering.CameraEvent.BeforeForwardOpaque);
         }
 
 
@@ -68,7 +64,7 @@ namespace TA
         {
             cam.RemoveCommandBuffers(Rendering.CameraEvent.BeforeImageEffects);
             Rendering.CommandBuffer cmd = new Rendering.CommandBuffer();
-            cmd.SetGlobalTexture(ShaderUtils.SceneFinalRT, cam.targetTexture);
+            cmd.SetGlobalTexture(ShaderUtils.SceneFinalRT, cam.targetTexture); // 这是个唯一的标识，方便在后效环节中使用
             cmd.name = "Setup SceneFinalRT";
             cam.AddCommandBuffer(Rendering.CameraEvent.BeforeImageEffects, cmd);
         }
@@ -79,7 +75,7 @@ namespace TA
 
             UpdateRT();
 
-            LoadStoreActionSetup(_camera, ClearColor);
+            LoadStoreActionSetup(_camera, Color.clear);
 
         }
 
@@ -106,7 +102,7 @@ namespace TA
 
             _targetTexture = RenderTexture.GetTemporary(_width, _height, 24,
                                                         RenderTextureFormat.Default, RenderTextureReadWrite.Default,
-                                                        (int)MSAA, RenderTextureMemoryless.MSAA);
+                                                        (int)MSAA, RenderTextureMemoryless.MSAA); // 为简化，没考虑HDR的情况
             _targetTexture.name = "SceneTargetTexture";
             _camera.forceIntoRenderTexture = true;
             _camera.targetTexture = _targetTexture;
