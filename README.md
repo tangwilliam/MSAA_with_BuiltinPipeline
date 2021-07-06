@@ -3,7 +3,7 @@ Unity 移动端使用多相机，MSAA Memoryless，及正确设置RenderTexture�
 
 使用了优化方案的场景：
 
-MSAAScene
+MSAAScene.unity
 
 其他的场景是参考对比用的。
 
