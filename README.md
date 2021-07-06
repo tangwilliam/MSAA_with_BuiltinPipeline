@@ -7,5 +7,3 @@ MSAAScene.unity
 
 其他的场景是参考对比用的。
 
-文章链接：
-https://zhuanlan.zhihu.com/p/386209391/edit
